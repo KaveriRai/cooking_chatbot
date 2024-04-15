@@ -211,7 +211,7 @@ def main():
         set_background('./assets/dark_theme.png')
         st.markdown('<style>h1 {color: #DAC3C1;}</style>', unsafe_allow_html=True)
     else:
-        set_background('./assets/light_theme.png')
+        set_background('./assets/universal_theme.png')
         st.markdown('<style>h1 {color: #325237;}</style>', unsafe_allow_html=True)
 
 
