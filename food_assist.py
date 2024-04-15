@@ -20,7 +20,7 @@ main_api_key = os.environ.get("OPENAI_API_KEY")
 
 # client calls openAI api, assistant, etc
 # client = openai.OpenAI()
-client = openai.Client(api_key="YOUR_API_KEY_HERE")
+client = openai.Client(api_key=main_api_key)
 model = "gpt-3.5-turbo-16k"
 
 def get_base64(bin_file):
@@ -68,7 +68,7 @@ class AssistantManager:
     assistant_id = "asst_SV7jXw5Z3T5rXqD8ADo4zPRB"
 
     def __init__(self, model: str = model):
-        self.client = openai.OpenAI()
+        self.client = openai.Client(api_key=main_api_key)
         self.model = model
         self.assistant = None
         self.thread = None
