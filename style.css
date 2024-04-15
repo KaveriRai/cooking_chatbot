@@ -1,0 +1,5 @@
+body {
+    background-image: url("assets/chatbot.png");
+    background-size: cover; /* Cover the entire background */
+    background-position: center; /* Center the background image */
+}

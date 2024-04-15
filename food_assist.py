@@ -1,12 +1,13 @@
 import openai
 import os
-from dotenv import find_dotenv, load_dotenv
+from dotenv import load_dotenv
 import time
-import logging
 from datetime import datetime
 import requests
 import json
 import streamlit as st
+import base64
+import darkdetect
 
 load_dotenv()
 
@@ -20,52 +21,39 @@ spoonacular_api_key = os.environ.get("SPOONACULAR_API_KEY")
 client = openai.OpenAI()
 model = "gpt-3.5-turbo-16k"
 
+def get_base64(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+def set_background(png_file):
+    bin_str = get_base64(png_file)
+    page_bg_img = '''
+    <style>
+    .stApp {
+    background-image: url("data:image/png;base64,%s");
+    background-size: cover;
+    }
+    </style>
+    ''' % bin_str
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
 def get_help(topic):
-    # url = (
-    #     f"https://newsapi.org/v2/everything?q={topic}&apiKey={news_api_key}&pageSize=5"
-    # )
-    # # url = (
-    # #     f"https://api.edamam.com/search?q={topic}&app_id={edamam_app_id}&app_key={edamam_api_key}"
-    # # )
-    # url = "https://api.spoonacular.com/food/converse"
-    # params = {
-    #     "apiKey": spoonacular_api_key,
-    #     "text": topic
-    # }
-    url = f"https://api.spoonacular.com/food/converse?text={topic}&apiKey={spoonacular_api_key}"
-
-
-    # try:
-    #     response = requests.get(url, params=params)
+    url = f"https://api.spoonacular.com/recipes/quickAnswer?q={topic}&apiKey={spoonacular_api_key}"
     try:
         response = requests.get(url)
-        print(response)
+        print(response.status_code, "STATUS")
         if response.status_code == 200:
             answer = json.dumps(response.json(), indent = 4)
             answer_json = json.loads(answer)
-            data = answer_json
-            return data
-            # status = data["status"]
-            # total_results = data["totalResults"]
-            # articles = data["articles"]
-            # final = []
-            # for article in articles:
-            #     source = article["source"]["name"]
-            #     author = article["author"]
-            #     title = article["title"]
-            #     description = article["description"]
-            #     url = article["url"]
-            #     content = article["content"]
-            #     title_desc = f"""
-            #         Title: {title},
-            #         Author: {author},
-            #         Description: {description},
-            #         URL: {url}
-            #     """
-            #     final.append(title_desc)
-
-            # return final
-
+            # data = answer_json
+            data = response.json()
+            print(data, "DATA")
+            final = []
+            print(f"RETURN RESPONSE ->> {final}")
+            if data and "answer" in data:
+                final.append(data["answer"])
+            return final
         else:
             return []
 
@@ -73,11 +61,9 @@ def get_help(topic):
     except requests.exceptions.RequestException as e:
         print("Error occured during api request", e)
 
-
-
 class AssistantManager:
-    thread_id = "thread_Jx3AbuuPwBDJAoPgKBoYrs8l"
-    assistant_id = "asst_xoCgzfNLgvaXcbkKNqc17dyw"
+    thread_id = "thread_36M0Im783ZusLPu9MZySa6OA"
+    assistant_id = "asst_SV7jXw5Z3T5rXqD8ADo4zPRB"
 
     def __init__(self, model: str = model):
         self.client = openai.OpenAI()
@@ -149,13 +135,6 @@ class AssistantManager:
             self.summary = "\n".join(summary)
             print(f"summary ----> {role.capitalize()}: => {response}")
 
-            # for msg in messages:
-            #     role = msg.role
-            #     content = msg.content[0].text.value
-            #     print(f"summary ----> {role.capitalize()}: => {content}")
-
-        # return summary
-
     def call_required_functions(self, required_actions):
         if not self.run:
             return
@@ -220,17 +199,24 @@ class AssistantManager:
 
 
 def main():
-    # ans = get_help("bitcoin")
-    # # ans = get_help("how to thicken my curry")
-    # print(ans)
     manager = AssistantManager()
 
     # Create streamlit ui
     st.title("Cooking Assistant")
 
+    # Add background image
+    if darkdetect.isDark():
+        set_background('./assets/dark_theme.png')
+        st.markdown('<style>h1 {color: #DAC3C1;}</style>', unsafe_allow_html=True)
+    else:
+        set_background('./assets/light_theme.png')
+        st.markdown('<style>h1 {color: #325237;}</style>', unsafe_allow_html=True)
+
+
     with st.form(key="user_input_form"):
         instructions = st.text_input("Enter question")
         submit_btn = st.form_submit_button(label="Run Assistant")
+
 
         if submit_btn:
             manager.create_assistant(
@@ -271,8 +257,8 @@ def main():
 
             st.write(summary)
 
-            st.text("Run Steps:")
-            st.code(manager.run_steps(), line_numbers=True)
+            # st.text("Run Steps:")
+            # st.code(manager.run_steps(), line_numbers=True)
 
 
 if __name__ == "__main__":
