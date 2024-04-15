@@ -15,10 +15,12 @@ edamam_api_key = os.environ.get("EDAMAM_API_KEY")
 edamam_app_id = os.environ.get("EDAMAM_APP_ID")
 news_api_key = os.environ.get("NEWS_API_KEY")
 spoonacular_api_key = os.environ.get("SPOONACULAR_API_KEY")
+main_api_key = os.environ.get("OPENAI_API_KEY")
 
 
 # client calls openAI api, assistant, etc
-client = openai.OpenAI()
+# client = openai.OpenAI()
+client = openai.Client(api_key="YOUR_API_KEY_HERE")
 model = "gpt-3.5-turbo-16k"
 
 def get_base64(bin_file):
